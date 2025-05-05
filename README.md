@@ -56,8 +56,8 @@ Before starting, ensure you have the following installed:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/DockerConfig.git
-   cd DockerConfig
+   git https://github.com/sntx10/docker-config.git
+   cd django-config
 
     Choose your setup:
 
