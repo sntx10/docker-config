@@ -26,7 +26,7 @@ Before starting, ensure you have the following installed:
 - Docker Compose
 - A registered domain (required for SSL setup)
 - Certbot for SSL certificates (if using Let's Encrypt)
-- Node.js and npm (for frontend development)
+- npm (for frontend development)
 
 ---
 
