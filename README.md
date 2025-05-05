@@ -33,8 +33,8 @@ Before starting, ensure you have the following installed:
 ## 🗂️ Project Structure
 
 ```bash New structure
- DockerConfig/ 🌐
-+├── docker-config/ 📂
+ django-config/ 🌐
++├── cfg/ 📂
 +|   ├── no-ssl/ 🚫🔒
 +|   │   ├── docker-compose.prod.yml  🎛️ # Docker Compose configuration for non-SSL production environment
 +|   │   ├── Dockerfile.prod          🐍 # Dockerfile for Django backend (non-SSL setup)
