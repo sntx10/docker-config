@@ -1,0 +1,103 @@
+services:
+  db:
+    image: postgres:14
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: web
+    restart: always
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - db
+      - redis
+    command: >
+      bash -c "python manage.py migrate --noinput &&
+               python manage.py collectstatic --noinput &&
+               gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: celery
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - redis
+    command: celery -A config worker -l info
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: celery-beat
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+    command: celery -A config beat -l info
+
+  frontend:
+    build:
+      context: ./app_name
+      dockerfile: Dockerfile.prod
+    container_name: frontend
+    restart: always
+    expose:
+      - "90"
+    command: npm run start
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    restart: always
+    depends_on:
+      - web
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
